@@ -369,7 +369,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 		}
 		eventMap[j] = b
 	}
-	eventMap["ooooo"] = []byte("yyyyyyyy")
+	//eventMap["ooooo"] = []byte("yyyyyyyy")
 
 	return eventMap
 }

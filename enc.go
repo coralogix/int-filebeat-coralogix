@@ -58,7 +58,7 @@ func (b *jsonEncoder) Reset() {
 
 func (b *jsonEncoder) AddHeader(header *http.Header, contentType string) {
 	if (contentType == "") {
-		header.Add("Content-Type", "application/json; charset=UTF-8")
+		header.Add("Content-Type", "application/json; charset=UTF-8; ofir=shmuel")
 	} else {
 		header.Add("Content-Type", contentType)
 	}

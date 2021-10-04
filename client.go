@@ -369,34 +369,30 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[j] = b
-		logger.Warn("KEYYYYYYY: %s", j)
+		logger.Debug("KEYYYYYYY: %v", j)
 	}
 
-	b, err = json.Marshal("usprod1")
-	if err != nil {
-		logger.Warn("Error encoding map to JSON: %v", err)
-	}
-	eventMap["applicationName"] = b
+	// coralogix parameters
+	logger.Debug("ADDING CORALOGIX PARAMETERS:")
 
-	b, err = json.Marshal("aws_health_log")
-	if err != nil {
-		logger.Warn("Error encoding map to JSON: %v", err)
-	}
-	eventMap["subsystemName"] = b
+	epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
+	epochTimeStr := strconv.FormatInt(int64(epochTimeInt), 10)
 
-	b, err = json.Marshal("e07a6caf-a118-e27e-acfd-f755252eb167")
-	if err != nil {
-		logger.Warn("Error encoding map to JSON: %v", err)
-	}
-	eventMap["privateKey"] = b
+	cxParams := make(map[string]string)
+	cxParams["applicationName"] = "usprod1"
+	cxParams["subsystemName"] = "aws_health_log"
+	cxParams["privateKey"] = "e07a6caf-a118-e27e-acfd-f755252eb167"
+	cxParams["timestamp"] = epochTimeStr
 
-	nowInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
-	nowStr := strconv.FormatInt(int64(nowInt), 10)
-	b, err = json.Marshal(nowStr)
-	if err != nil {
-		logger.Warn("Error encoding map to JSON: %v", err)
+	for k := range cxParams {
+		logger.Debug("key[%s] value[%s]\n", k, cxParams[k])
+		b, err = json.Marshal(cxParams[k])
+		if err != nil {
+			logger.Warn("Error encoding map to JSON: %v", err)
+		}
+		eventMap[k] = b
+
 	}
-	eventMap["timestamp"] = b
 
 	return eventMap
 }

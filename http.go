@@ -2,19 +2,20 @@ package http
 
 import (
 	"errors"
+
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
+	"github.com/elastic/beats/v7/libbeat/common/transport/tlscommon"
 	"github.com/elastic/beats/v7/libbeat/logp"
 	"github.com/elastic/beats/v7/libbeat/outputs"
-	"github.com/elastic/beats/v7/libbeat/common/transport/tlscommon"
 )
 
 func init() {
-	outputs.RegisterType("http", MakeHTTP)
+	outputs.RegisterType("coralogix", MakeHTTP)
 }
 
 var (
-	logger = logp.NewLogger("output.http")
+	logger = logp.NewLogger("output.coralogix")
 	// ErrNotConnected indicates failure due to client having no valid connection
 	ErrNotConnected = errors.New("not connected")
 	// ErrJSONEncodeFailed indicates encoding failures

@@ -1,21 +1,22 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/elastic/beats/v7/libbeat/beat"
-	"github.com/elastic/beats/v7/libbeat/common"
-	"github.com/elastic/beats/v7/libbeat/outputs"
-	"github.com/elastic/beats/v7/libbeat/outputs/outil"
-	"github.com/elastic/beats/v7/libbeat/common/transport"
-	"github.com/elastic/beats/v7/libbeat/common/transport/tlscommon"
-	"github.com/elastic/beats/v7/libbeat/publisher"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
-	"context"
+
+	"github.com/elastic/beats/v7/libbeat/beat"
+	"github.com/elastic/beats/v7/libbeat/common"
+	"github.com/elastic/beats/v7/libbeat/common/transport"
+	"github.com/elastic/beats/v7/libbeat/common/transport/tlscommon"
+	"github.com/elastic/beats/v7/libbeat/outputs"
+	"github.com/elastic/beats/v7/libbeat/outputs/outil"
+	"github.com/elastic/beats/v7/libbeat/publisher"
 )
 
 // Client struct
@@ -93,17 +94,17 @@ func NewClient(s ClientSettings) (*Client, error) {
 	compression := s.CompressionLevel
 	if compression == 0 {
 		switch s.Format {
-			case "json":
-				encoder = newJSONEncoder(nil)
-			case "json_lines":
-				encoder = newJSONLinesEncoder(nil)
+		case "json":
+			encoder = newJSONEncoder(nil)
+		case "json_lines":
+			encoder = newJSONLinesEncoder(nil)
 		}
 	} else {
 		switch s.Format {
-			case "json":
-				encoder, err = newGzipEncoder(compression, nil)
-			case "json_lines":
-				encoder, err = newGzipLinesEncoder(compression, nil)
+		case "json":
+			encoder, err = newGzipEncoder(compression, nil)
+		case "json_lines":
+			encoder, err = newGzipLinesEncoder(compression, nil)
 		}
 		if err != nil {
 			return nil, err
@@ -348,6 +349,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	// Inline not supported,
 	// HT: https://stackoverflow.com/questions/49901287/embed-mapstringstring-in-go-json-marshaling-without-extra-json-property-inlin
 	type event0 event // prevent recursion
+
 	e := event{Timestamp: v.Timestamp.UTC(), Fields: v.Fields}
 	b, err := json.Marshal(event0(e))
 	if err != nil {
@@ -367,5 +369,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 		}
 		eventMap[j] = b
 	}
+	eventMap["ooooo"] = []byte("yyyyyyyy")
+
 	return eventMap
 }

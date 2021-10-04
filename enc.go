@@ -57,8 +57,8 @@ func (b *jsonEncoder) Reset() {
 }
 
 func (b *jsonEncoder) AddHeader(header *http.Header, contentType string) {
-	if (contentType == "") {
-		header.Add("Content-Type", "application/json; charset=UTF-8; ofir=shmuel")
+	if contentType == "" {
+		header.Add("Content-Type", "application/json; charset=UTF-8")
 	} else {
 		header.Add("Content-Type", contentType)
 	}
@@ -106,7 +106,7 @@ func (b *jsonLinesEncoder) Reset() {
 }
 
 func (b *jsonLinesEncoder) AddHeader(header *http.Header, contentType string) {
-	if (contentType == "") {
+	if contentType == "" {
 		header.Add("Content-Type", "application/x-ndjson; charset=UTF-8")
 	} else {
 		header.Add("Content-Type", contentType)
@@ -178,7 +178,7 @@ func (b *gzipEncoder) Reader() io.Reader {
 }
 
 func (b *gzipEncoder) AddHeader(header *http.Header, contentType string) {
-	if (contentType == "") {
+	if contentType == "" {
 		header.Add("Content-Type", "application/json; charset=UTF-8")
 	} else {
 		header.Add("Content-Type", contentType)
@@ -238,7 +238,7 @@ func (b *gzipLinesEncoder) Reader() io.Reader {
 }
 
 func (b *gzipLinesEncoder) AddHeader(header *http.Header, contentType string) {
-	if (contentType == "") {
+	if contentType == "" {
 		header.Add("Content-Type", "application/x-ndjson; charset=UTF-8")
 	} else {
 		header.Add("Content-Type", contentType)

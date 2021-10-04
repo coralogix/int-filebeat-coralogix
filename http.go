@@ -15,7 +15,7 @@ func init() {
 }
 
 var (
-	logger = logp.NewLogger("output.coralogix")
+	logger = logp.NewLogger("output.http")
 	// ErrNotConnected indicates failure due to client having no valid connection
 	ErrNotConnected = errors.New("not connected")
 	// ErrJSONEncodeFailed indicates encoding failures

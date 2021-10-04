@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/elastic/beats/v7/libbeat/beat"
@@ -368,13 +369,34 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[j] = b
+		logger.Warn("KEYYYYYYY: %s", j)
 	}
-	b, err = json.Marshal("bbbbbbbb")
+
+	b, err = json.Marshal("usprod1")
 	if err != nil {
 		logger.Warn("Error encoding map to JSON: %v", err)
 	}
-	eventMap["ooooooo"] = b
-	// eventMap["ooooo"] = []byte("yyyyyyyy")
+	eventMap["applicationName"] = b
+
+	b, err = json.Marshal("aws_health_log")
+	if err != nil {
+		logger.Warn("Error encoding map to JSON: %v", err)
+	}
+	eventMap["subsystemName"] = b
+
+	b, err = json.Marshal("e07a6caf-a118-e27e-acfd-f755252eb167")
+	if err != nil {
+		logger.Warn("Error encoding map to JSON: %v", err)
+	}
+	eventMap["privateKey"] = b
+
+	nowInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
+	nowStr := strconv.FormatInt(int64(nowInt), 10)
+	b, err = json.Marshal(nowStr)
+	if err != nil {
+		logger.Warn("Error encoding map to JSON: %v", err)
+	}
+	eventMap["timestamp"] = b
 
 	return eventMap
 }

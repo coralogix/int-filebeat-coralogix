@@ -419,7 +419,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	// e.Fields
 
 	raw := json.RawMessage(`{"b":c","dea": {"a":"b"}}`)
-	j, _ := json.Marshal(&raw)
+	j, _ := json.Marshal(raw)
 	eventMap["text"] = j
 
 	return eventMap

@@ -396,17 +396,17 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	// add log entries fields
 
-	var logEntriesFields map[string]json.RawMessage
+	// var logEntriesFields map[string]json.RawMessage
 
-	for j, k := range e.Fields {
-		b, err = json.Marshal(k)
-		if err != nil {
-			logger.Warn("Error encoding map to JSON: %v", err)
-		}
-		logEntriesFields[j] = b
-	}
+	// for j, k := range e.Fields {
+	// 	b, err = json.Marshal(k)
+	// 	if err != nil {
+	// 		logger.Warn("Error encoding map to JSON: %v", err)
+	// 	}
+	// 	logEntriesFields[j] = b
+	// }
 
-	cxParamsInterface := []map[string]interface{}{{"timestamp": epochTimeStr, "severity": "5", "text": logEntriesFields}}
+	cxParamsInterface := []map[string]interface{}{{"timestamp": epochTimeStr, "severity": "5", "text": "AA"}}
 
 	b, err = json.Marshal(cxParamsInterface)
 	if err != nil {

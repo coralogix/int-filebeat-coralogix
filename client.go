@@ -394,5 +394,13 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	}
 
+	cxParamsInterface := map[string]interface{}{"cxParams": "b", "abc": "ab"}
+
+	b, err = json.Marshal(cxParamsInterface)
+	if err != nil {
+		logger.Warn("Error encoding map to JSON: %v", err)
+	}
+	eventMap["logEntries"] = b
+
 	return eventMap
 }

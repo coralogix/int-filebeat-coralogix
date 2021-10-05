@@ -363,14 +363,14 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 		logger.Warn("Error decoding JSON to map: %v", err)
 	}
 	// Add the individual fields to the map, flatten "Fields"
-	for j, k := range e.Fields {
+	/*for j, k := range e.Fields {
 		b, err = json.Marshal(k)
 		if err != nil {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[j] = b
 		logger.Debug("KEYYYYYYY: %v", j)
-	}
+	}*/
 
 	// coralogix parameters
 	logger.Debug("ADDING CORALOGIX PARAMETERS:")

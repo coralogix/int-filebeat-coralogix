@@ -406,7 +406,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	// 	logEntriesFields[j] = b
 	// }
 
-	cxParamsInterface := []map[string]interface{}{{"timestamp": epochTimeStr, "severity": "5"}}
+	cxParamsInterface := []map[string]interface{}{{"timestamp": epochTimeStr, "severity": "5", "text": "{\"b\":\"c\",\"dea\": {\"a\":\"b\"}}"}}
 
 	b, err = json.Marshal(cxParamsInterface)
 
@@ -416,9 +416,9 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	eventMap["logEntries"] = b
 
 	//////////////////////////////////////////
-	// e.Fields
+	// A
 
-	raw := json.RawMessage(`{"b":c","dea": {"a":"b"}}`)
+	raw := "{\"b\":\"c\",\"dea\": {\"a\":\"b\"}}"
 	j, _ := json.Marshal(raw)
 	eventMap["text"] = j
 

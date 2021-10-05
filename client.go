@@ -394,7 +394,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	}
 
-	cxParamsInterface := []map[string]interface{}{{"cxParams": "b", "abc": "ab"}}
+	cxParamsInterface := []map[string]interface{}{{"timestamp": epochTimeStr, "severity": "4", "text": "test text"}}
 
 	b, err = json.Marshal(cxParamsInterface)
 	if err != nil {

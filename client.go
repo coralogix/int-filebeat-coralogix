@@ -369,44 +369,47 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[j] = b
-		logger.Debug("KEYYYYYYY: %v", j)
 	}*/
 
 	// coralogix parameters
 	logger.Debug("ADDING CORALOGIX PARAMETERS:")
+	//httpConfig.
 
-	epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
-	epochTimeStr := strconv.FormatInt(int64(epochTimeInt), 10)
+	// cxParams := make(map[string]string)
+	// cxParams["applicationName"] = "usprod1"
+	// cxParams["subsystemName"] = "aws_health_log"
+	// cxParams["privateKey"] = "e07a6caf-a118-e27e-acfd-f755252eb167"
+	// cxParams["timestamp"] = epochTimeStr
 
-	cxParams := make(map[string]string)
-	cxParams["applicationName"] = "usprod1"
-	cxParams["subsystemName"] = "aws_health_log"
-	cxParams["privateKey"] = "e07a6caf-a118-e27e-acfd-f755252eb167"
-	cxParams["timestamp"] = epochTimeStr
+	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
 
-	for k := range cxParams {
-		logger.Debug("key[%s] value[%s]\n", k, cxParams[k])
-		b, err = json.Marshal(cxParams[k])
+	for _, k := range cxParamsKeys {
+		b, err = json.Marshal(e.Fields.GetValue(k))
 		if err != nil {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[k] = b
+		e.Fields.Delete(k)
 
+	}
+
+	severityVal := "3"
+	if e.Fields.HasKey("severity") {
+		severityVal = string(e.Fields.GetValue("severity"))
+		e.Fields.Delete("severity")
+	}
+	// if "timestamp" does not exist put current epoch time,
+	// if exist save it and delete from e.Fields
+	epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
+	timestampVal := strconv.FormatInt(int64(epochTimeInt), 10)
+	if e.Fields.HasKey("timestamp") {
+		timestampVal = string(e.Fields.GetValue("timestamp"))
+		e.Fields.Delete("timestamp")
 	}
 
 	// add log entries fields
 
-	// var logEntriesFields map[string]json.RawMessage
-
-	//for j, k := range e.Fields {
-	// 	b, err = json.Marshal(k)
-	// 	if err != nil {
-	// 		logger.Warn("Error encoding map to JSON: %v", err)
-	// 	}
-	// 	logEntriesFields[j] = b
-	// }
-
-	cxParamsInterface := []map[string]interface{}{{"timestamp": epochTimeStr, "severity": "5", "text": common.MapStr.String(e.Fields)}}
+	cxParamsInterface := []map[string]interface{}{{"timestamp": timestampVal, "severity": severityVal, "text": common.MapStr.String(e.Fields)}}
 
 	b, err = json.Marshal(cxParamsInterface)
 
@@ -415,12 +418,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	}
 	eventMap["logEntries"] = b
 
-	//////////////////////////////////////////
-	// A
-
-	// raw := "{\"b\":\"c\",\"dea\": {\"a\":\"b\"}}"
-	// j, _ := json.Marshal(raw)
-	// eventMap["text"] = j
+	////////////////////////////////////////////////////////////////////////////////////
 
 	return eventMap
 }

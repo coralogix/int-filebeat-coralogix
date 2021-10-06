@@ -411,7 +411,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	// add log entries fields
 
-	cxParamsInterface := []map[string]interface{}{{"timestamp": string(timestampVal), "severity": string(severityVal), "text": common.MapStr.String(e.Fields)}}
+	cxParamsInterface := []map[string]interface{}{{"timestamp": timestampVal, "severity": severityVal, "text": common.MapStr.String(e.Fields)}}
 
 	b, err = json.Marshal(cxParamsInterface)
 

@@ -394,22 +394,24 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	}
 
 	severityVal := "3"
-	if e.Fields.HasKey("severity") {
-		severityVal = string(e.Fields.GetValue("severity"))
+	_, err = e.Fields.HasKey("severity")
+	if err != nil {
+		severityVal, _ = e.Fields.GetValue("severity")
 		e.Fields.Delete("severity")
 	}
 	// if "timestamp" does not exist put current epoch time,
 	// if exist save it and delete from e.Fields
 	epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
 	timestampVal := strconv.FormatInt(int64(epochTimeInt), 10)
-	if e.Fields.HasKey("timestamp") {
-		timestampVal = string(e.Fields.GetValue("timestamp"))
+	_, err = e.Fields.HasKey("timestamp")
+	if err != nil {
+		timestampVal, _ = e.Fields.GetValue("timestamp")
 		e.Fields.Delete("timestamp")
 	}
 
 	// add log entries fields
 
-	cxParamsInterface := []map[string]interface{}{{"timestamp": timestampVal, "severity": severityVal, "text": common.MapStr.String(e.Fields)}}
+	cxParamsInterface := []map[string]interface{}{{"timestamp": string(timestampVal), "severity": string(severityVal), "text": common.MapStr.String(e.Fields)}}
 
 	b, err = json.Marshal(cxParamsInterface)
 

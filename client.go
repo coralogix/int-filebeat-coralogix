@@ -369,44 +369,60 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[j] = b
-		logger.Debug("KEYYYYYYY: %v", j)
 	}*/
 
 	// coralogix parameters
 	logger.Debug("ADDING CORALOGIX PARAMETERS:")
+	//httpConfig.
 
-	epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
-	epochTimeStr := strconv.FormatInt(int64(epochTimeInt), 10)
+	// cxParams := make(map[string]string)
+	// cxParams["applicationName"] = "usprod1"
+	// cxParams["subsystemName"] = "aws_health_log"
+	// cxParams["privateKey"] = "e07a6caf-a118-e27e-acfd-f755252eb167"
+	// cxParams["timestamp"] = epochTimeStr
 
-	cxParams := make(map[string]string)
-	cxParams["applicationName"] = "usprod1"
-	cxParams["subsystemName"] = "aws_health_log"
-	cxParams["privateKey"] = "e07a6caf-a118-e27e-acfd-f755252eb167"
-	cxParams["timestamp"] = epochTimeStr
+	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
 
-	for k := range cxParams {
-		logger.Debug("key[%s] value[%s]\n", k, cxParams[k])
-		b, err = json.Marshal(cxParams[k])
+	for _, k := range cxParamsKeys {
+		paramVal, err := e.Fields.GetValue(k)
+		if err != nil {
+			logger.Warn("Error Coralogix parameter %v is not exists: %v ", k, err)
+		}
+		b, err = json.Marshal(paramVal.(string))
 		if err != nil {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[k] = b
+		e.Fields.Delete(k)
 
 	}
 
+	var severityVal interface{}
+	_, err = e.Fields.HasKey("severity")
+	if err != nil {
+		severityVal, _ = e.Fields.GetValue("severity")
+		e.Fields.Delete("severity")
+	} else {
+		severityVal = "3"
+
+	}
+	// if "timestamp" does not exist put current epoch time,
+	// if exist save it and delete from e.Fields
+	var timestampVal interface{}
+	_, err = e.Fields.HasKey("timestamp")
+	if err != nil {
+		timestampVal, _ = e.Fields.GetValue("timestamp")
+		e.Fields.Delete("timestamp")
+	} else {
+		epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
+		timestampVal = strconv.FormatInt(int64(epochTimeInt), 10)
+	}
+
 	// add log entries fields
+	// timestampValStr, _ := timestampVal.(string)
+	// severityValStr, _ := severityVal.(string)
 
-	// var logEntriesFields map[string]json.RawMessage
-
-	//for j, k := range e.Fields {
-	// 	b, err = json.Marshal(k)
-	// 	if err != nil {
-	// 		logger.Warn("Error encoding map to JSON: %v", err)
-	// 	}
-	// 	logEntriesFields[j] = b
-	// }
-
-	cxParamsInterface := []map[string]interface{}{{"timestamp": epochTimeStr, "severity": "5", "text": common.MapStr.String(e.Fields)}}
+	cxParamsInterface := []map[string]interface{}{{"timestamp": timestampVal, "severity": severityVal, "text": common.MapStr.String(e.Fields)}}
 
 	b, err = json.Marshal(cxParamsInterface)
 
@@ -415,12 +431,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	}
 	eventMap["logEntries"] = b
 
-	//////////////////////////////////////////
-	// A
-
-	// raw := "{\"b\":\"c\",\"dea\": {\"a\":\"b\"}}"
-	// j, _ := json.Marshal(raw)
-	// eventMap["text"] = j
+	////////////////////////////////////////////////////////////////////////////////////
 
 	return eventMap
 }

@@ -397,7 +397,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	}
 
-	var severityVal interface{}
+	var severityVal interface{} = "3"
 	_, err = e.Fields.HasKey("severity")
 	if err != nil {
 		severityVal, _ = e.Fields.GetValue("severity")
@@ -408,7 +408,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	}
 	// if "timestamp" does not exist put current epoch time,
 	// if exist save it and delete from e.Fields
-	var timestampVal interface{}
+	var timestampVal interface{} = "11111111111"
 	_, err = e.Fields.HasKey("timestamp")
 	if err != nil {
 		timestampVal, _ = e.Fields.GetValue("timestamp")

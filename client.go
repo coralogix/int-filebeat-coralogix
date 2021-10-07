@@ -384,11 +384,11 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
 
 	for _, k := range cxParamsKeys {
-		b, err = e.Fields.GetValue(k)
+		paramVal, err := e.Fields.GetValue(k)
 		if err != nil {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
-		eventMap[k] = b
+		eventMap[k] = paramVal
 		e.Fields.Delete(k)
 
 	}

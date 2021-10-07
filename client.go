@@ -384,7 +384,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
 
 	for _, k := range cxParamsKeys {
-		b, err = json.Marshal(e.Fields.GetValue(k))
+		b, err = e.Fields.GetValue(k)
 		if err != nil {
 			logger.Warn("Error encoding map to JSON: %v", err)
 		}
@@ -393,23 +393,30 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	}
 
-	severityVal := "3"
+	var severityVal interface{}
 	_, err = e.Fields.HasKey("severity")
 	if err != nil {
 		severityVal, _ = e.Fields.GetValue("severity")
 		e.Fields.Delete("severity")
+	} else {
+		severityVal = "3"
+
 	}
 	// if "timestamp" does not exist put current epoch time,
 	// if exist save it and delete from e.Fields
-	epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
-	timestampVal := strconv.FormatInt(int64(epochTimeInt), 10)
+	var timestampVal interface{}
 	_, err = e.Fields.HasKey("timestamp")
 	if err != nil {
 		timestampVal, _ = e.Fields.GetValue("timestamp")
 		e.Fields.Delete("timestamp")
+	} else {
+		epochTimeInt := int64(time.Now().UnixNano() / int64(time.Millisecond))
+		timestampVal = strconv.FormatInt(int64(epochTimeInt), 10)
 	}
 
 	// add log entries fields
+	// timestampValStr, _ := timestampVal.(string)
+	// severityValStr, _ := severityVal.(string)
 
 	cxParamsInterface := []map[string]interface{}{{"timestamp": timestampVal, "severity": severityVal, "text": common.MapStr.String(e.Fields)}}
 

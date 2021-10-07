@@ -384,7 +384,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
 
 	for _, k := range cxParamsKeys {
-		paramVal, err := e.Fields.GetValue(k).(string)
+		paramVal, err := e.Fields.GetValue(k)
 		if err != nil {
 			logger.Warn("Error Coralogix parameter %v is not exists: %v ", k, err)
 		}

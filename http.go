@@ -76,7 +76,7 @@ func MakeHTTP(
 			ContentType:      config.ContentType,
 			Format:           config.Format,
 		})
-		client.log.Info("Final host URL: " + hostURL)
+		// client.log.Info("Final host URL: " + hostURL)
 
 		if err != nil {
 			return outputs.Fail(err)

@@ -238,7 +238,7 @@ func (client *Client) BatchPublishEvent(data []publisher.Event) error {
 	}
 	var events = make([]eventRaw, len(data))
 	for i, event := range data {
-		events[i] = makeEvent(&event.Content)
+		events[i] = client.makeEvent(&event.Content)
 	}
 	status, _, err := client.request("POST", client.params, events, client.headers)
 	if err != nil {
@@ -266,7 +266,7 @@ func (client *Client) PublishEvent(data publisher.Event) error {
 	event := data
 	client.log.Debugf("CORALOGIXX LOGGER")
 	client.log.Debugf("Publish event: %s", event)
-	status, _, err := client.request("POST", client.params, makeEvent(&event.Content), client.headers)
+	status, _, err := client.request("POST", client.params, client.makeEvent(&event.Content), client.headers)
 	if err != nil {
 		client.log.Warn("Fail to insert a single event: %s", err)
 		if err == ErrJSONEncodeFailed {
@@ -350,7 +350,7 @@ func closing(c io.Closer) {
 }
 
 //this should ideally be in enc.go
-func makeEvent(v *beat.Event) map[string]json.RawMessage {
+func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 	// Inline not supported,
 	// HT: https://stackoverflow.com/questions/49901287/embed-mapstringstring-in-go-json-marshaling-without-extra-json-property-inlin
 	type event0 event // prevent recursion
@@ -358,43 +358,28 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	e := event{Timestamp: v.Timestamp.UTC(), Fields: v.Fields}
 	b, err := json.Marshal(event0(e))
 	if err != nil {
-		// logger.Warn("Error encoding event to JSON: %v", err)
+		client.log.Warn("Error encoding event to JSON: %v", err)
 	}
 
 	var eventMap map[string]json.RawMessage
 	err = json.Unmarshal(b, &eventMap)
 	if err != nil {
-		// logger.Warn("Error decoding JSON to map: %v", err)
+		client.log.Warn("Error decoding JSON to map: %v", err)
 	}
-	// Add the individual fields to the map, flatten "Fields"
-	/*for j, k := range e.Fields {
-		b, err = json.Marshal(k)
-		if err != nil {
-			logger.Warn("Error encoding map to JSON: %v", err)
-		}
-		eventMap[j] = b
-	}*/
 
 	// coralogix parameters
-	// logger.Debug("ADDING CORALOGIX PARAMETERS:")
-	//httpConfig.
-
-	// cxParams := make(map[string]string)
-	// cxParams["applicationName"] = "usprod1"
-	// cxParams["subsystemName"] = "aws_health_log"
-	// cxParams["privateKey"] = "e07a6caf-a118-e27e-acfd-f755252eb167"
-	// cxParams["timestamp"] = epochTimeStr
+	client.log.Debug("ADDING CORALOGIX PARAMETERS:")
 
 	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
 
 	for _, k := range cxParamsKeys {
 		paramVal, err := e.Fields.GetValue(k)
 		if err != nil {
-			// logger.Warn("Error Coralogix parameter %v is not exists: %v ", k, err)
+			client.log.Warn("Error Coralogix parameter %v is not exists: %v ", k, err)
 		}
 		b, err = json.Marshal(paramVal.(string))
 		if err != nil {
-			// logger.Warn("Error encoding map to JSON: %v", err)
+			client.log.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[k] = b
 		e.Fields.Delete(k)
@@ -431,7 +416,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	b, err = json.Marshal(cxParamsInterface)
 
 	if err != nil {
-		// logger.Warn("Error encoding map to JSON: %v", err)
+		client.log.Warn("Error encoding map to JSON: %v", err)
 	}
 	eventMap["logEntries"] = b
 

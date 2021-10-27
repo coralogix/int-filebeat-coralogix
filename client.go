@@ -236,6 +236,7 @@ func (client *Client) BatchPublishEvent(data []publisher.Event) error {
 	if !client.connected {
 		return ErrNotConnected
 	}
+	client.log.Debugf("BATCH:: Start batch of %d events", len(data))
 	var events = make([]eventRaw, len(data))
 	for i, event := range data {
 		events[i] = client.makeEvent(&event.Content)
@@ -248,6 +249,7 @@ func (client *Client) BatchPublishEvent(data []publisher.Event) error {
 			return nil
 		}
 	}
+	client.log.Debugf("BATCH:: status code %s", status)
 	switch {
 	case status == 500 || status == 400: //server error or bad input, don't retry
 		return nil
@@ -255,6 +257,7 @@ func (client *Client) BatchPublishEvent(data []publisher.Event) error {
 		// retry
 		return err
 	}
+	client.log.Debugf("BATCH:: END OF BATCH")
 	return nil
 }
 

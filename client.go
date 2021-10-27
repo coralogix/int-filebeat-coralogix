@@ -18,8 +18,11 @@ import (
 	"github.com/elastic/beats/v7/libbeat/outputs"
 	"github.com/elastic/beats/v7/libbeat/outputs/outil"
 	"github.com/elastic/beats/v7/libbeat/publisher"
+
+	"github.com/elastic/beats/v7/libbeat/logp"
 )
 
+// var logger *logp.Logger
 var logger = logp.NewLogger("coralogix")
 
 // Client struct

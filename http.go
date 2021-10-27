@@ -6,7 +6,8 @@ import (
 	"github.com/elastic/beats/v7/libbeat/beat"
 	"github.com/elastic/beats/v7/libbeat/common"
 	"github.com/elastic/beats/v7/libbeat/common/transport/tlscommon"
-	"github.com/elastic/beats/v7/libbeat/logp"
+
+	// "github.com/elastic/beats/v7/libbeat/logp"
 	"github.com/elastic/beats/v7/libbeat/outputs"
 )
 
@@ -15,7 +16,7 @@ func init() {
 }
 
 var (
-	logger = logp.NewLogger("output.http")
+	// logger = logp.NewLogger("output.http")
 	// ErrNotConnected indicates failure due to client having no valid connection
 	ErrNotConnected = errors.New("not connected")
 	// ErrJSONEncodeFailed indicates encoding failures
@@ -45,7 +46,7 @@ func MakeHTTP(
 		return outputs.Fail(err)
 	}
 	if proxyURL != nil {
-		logger.Info("Using proxy URL: %s", proxyURL)
+		//logger.Info("Using proxy URL: %s", proxyURL)
 	}
 	params := config.Params
 	if len(params) == 0 {
@@ -53,13 +54,13 @@ func MakeHTTP(
 	}
 	clients := make([]outputs.NetworkClient, len(hosts))
 	for i, host := range hosts {
-		logger.Info("Making client for host: " + host)
+		//logger.Info("Making client for host: " + host)
 		hostURL, err := common.MakeURL(config.Protocol, config.Path, host, 80)
 		if err != nil {
-			logger.Error("Invalid host param set: %s, Error: %v", host, err)
+			//logger.Error("Invalid host param set: %s, Error: %v", host, err)
 			return outputs.Fail(err)
 		}
-		logger.Info("Final host URL: " + hostURL)
+		//logger.Info("Final host URL: " + hostURL)
 		var client outputs.NetworkClient
 		client, err = NewClient(ClientSettings{
 			URL:              hostURL,

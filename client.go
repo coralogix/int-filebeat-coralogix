@@ -15,6 +15,7 @@ import (
 	"github.com/elastic/beats/v7/libbeat/common"
 	"github.com/elastic/beats/v7/libbeat/common/transport"
 	"github.com/elastic/beats/v7/libbeat/common/transport/tlscommon"
+	"github.com/elastic/beats/v7/libbeat/logp"
 	"github.com/elastic/beats/v7/libbeat/outputs"
 	"github.com/elastic/beats/v7/libbeat/outputs/outil"
 	"github.com/elastic/beats/v7/libbeat/publisher"
@@ -32,6 +33,7 @@ type Client struct {
 	observer         outputs.Observer
 	headers          map[string]string
 	format           string
+	log              *logp.Logger
 }
 
 // ClientSettings struct
@@ -76,7 +78,7 @@ func NewClient(s ClientSettings) (*Client, error) {
 	if s.Proxy != nil {
 		proxy = http.ProxyURL(s.Proxy)
 	}
-	logger.Info("HTTP URL: %s", s.URL)
+	// logger.Info("HTTP URL: %s", s.URL)
 	var dialer, tlsDialer transport.Dialer
 	var err error
 
@@ -133,6 +135,7 @@ func NewClient(s ClientSettings) (*Client, error) {
 		batchPublish:     s.BatchPublish,
 		headers:          s.Headers,
 		format:           s.Format,
+		log:              logp.NewLogger("coralogix"),
 	}
 
 	return client, nil
@@ -205,13 +208,13 @@ func (client *Client) publishEvents(data []publisher.Event) ([]publisher.Event, 
 	sendErr := error(nil)
 	if client.batchPublish {
 		// Publish events in bulk
-		logger.Debugf("Publishing events in batch.")
+		client.log.logger.Debugf("Publishing events in batch.")
 		sendErr = client.BatchPublishEvent(data)
 		if sendErr != nil {
 			return data, sendErr
 		}
 	} else {
-		logger.Debugf("Publishing events one by one.")
+		client.log.logger.Debugf("Publishing events one by one.")
 		for index, event := range data {
 			sendErr = client.PublishEvent(event)
 			if sendErr != nil {
@@ -221,7 +224,7 @@ func (client *Client) publishEvents(data []publisher.Event) ([]publisher.Event, 
 			}
 		}
 	}
-	logger.Debugf("PublishEvents: %d metrics have been published over HTTP in %v.", len(data), time.Now().Sub(begin))
+	client.log.logger.Debugf("PublishEvents: %d metrics have been published over HTTP in %v.", len(data), time.Now().Sub(begin))
 	if len(failedEvents) > 0 {
 		return failedEvents, sendErr
 	}
@@ -239,7 +242,7 @@ func (client *Client) BatchPublishEvent(data []publisher.Event) error {
 	}
 	status, _, err := client.request("POST", client.params, events, client.headers)
 	if err != nil {
-		logger.Warn("Fail to insert a single event: %s", err)
+		client.log.logger.Warn("Fail to insert a single event: %s", err)
 		if err == ErrJSONEncodeFailed {
 			// don't retry unencodable values
 			return nil
@@ -261,10 +264,10 @@ func (client *Client) PublishEvent(data publisher.Event) error {
 		return ErrNotConnected
 	}
 	event := data
-	logger.Debugf("Publish event: %s", event)
+	client.log.logger.Debugf("Publish event: %s", event)
 	status, _, err := client.request("POST", client.params, makeEvent(&event.Content), client.headers)
 	if err != nil {
-		logger.Warn("Fail to insert a single event: %s", err)
+		client.log.logger.Warn("Fail to insert a single event: %s", err)
 		if err == ErrJSONEncodeFailed {
 			// don't retry unencodable values
 			return nil
@@ -285,14 +288,14 @@ func (client *Client) PublishEvent(data publisher.Event) error {
 
 func (conn *Connection) request(method string, params map[string]string, body interface{}, headers map[string]string) (int, []byte, error) {
 	urlStr := addToURL(conn.URL, params)
-	logger.Debugf("%s %s %v", method, urlStr, body)
+	// logger.Debugf("%s %s %v", method, urlStr, body)
 
 	if body == nil {
 		return conn.execRequest(method, urlStr, nil, headers)
 	}
 
 	if err := conn.encoder.Marshal(body); err != nil {
-		logger.Warn("Failed to json encode body (%v): %#v", err, body)
+		// logger.Warn("Failed to json encode body (%v): %#v", err, body)
 		return 0, nil, ErrJSONEncodeFailed
 	}
 	return conn.execRequest(method, urlStr, conn.encoder.Reader(), headers)
@@ -301,7 +304,7 @@ func (conn *Connection) request(method string, params map[string]string, body in
 func (conn *Connection) execRequest(method, url string, body io.Reader, headers map[string]string) (int, []byte, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
-		logger.Warn("Failed to create request: %v", err)
+		// logger.Warn("Failed to create request: %v", err)
 		return 0, nil, err
 	}
 	if body != nil {
@@ -341,7 +344,7 @@ func (conn *Connection) execHTTPRequest(req *http.Request, headers map[string]st
 func closing(c io.Closer) {
 	err := c.Close()
 	if err != nil {
-		logger.Warn("Close failed with: %v", err)
+		// logger.Warn("Close failed with: %v", err)
 	}
 }
 
@@ -354,13 +357,13 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	e := event{Timestamp: v.Timestamp.UTC(), Fields: v.Fields}
 	b, err := json.Marshal(event0(e))
 	if err != nil {
-		logger.Warn("Error encoding event to JSON: %v", err)
+		// logger.Warn("Error encoding event to JSON: %v", err)
 	}
 
 	var eventMap map[string]json.RawMessage
 	err = json.Unmarshal(b, &eventMap)
 	if err != nil {
-		logger.Warn("Error decoding JSON to map: %v", err)
+		// logger.Warn("Error decoding JSON to map: %v", err)
 	}
 	// Add the individual fields to the map, flatten "Fields"
 	/*for j, k := range e.Fields {
@@ -372,7 +375,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	}*/
 
 	// coralogix parameters
-	logger.Debug("ADDING CORALOGIX PARAMETERS:")
+	// logger.Debug("ADDING CORALOGIX PARAMETERS:")
 	//httpConfig.
 
 	// cxParams := make(map[string]string)
@@ -386,11 +389,11 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	for _, k := range cxParamsKeys {
 		paramVal, err := e.Fields.GetValue(k)
 		if err != nil {
-			logger.Warn("Error Coralogix parameter %v is not exists: %v ", k, err)
+			// logger.Warn("Error Coralogix parameter %v is not exists: %v ", k, err)
 		}
 		b, err = json.Marshal(paramVal.(string))
 		if err != nil {
-			logger.Warn("Error encoding map to JSON: %v", err)
+			// logger.Warn("Error encoding map to JSON: %v", err)
 		}
 		eventMap[k] = b
 		e.Fields.Delete(k)
@@ -427,7 +430,7 @@ func makeEvent(v *beat.Event) map[string]json.RawMessage {
 	b, err = json.Marshal(cxParamsInterface)
 
 	if err != nil {
-		logger.Warn("Error encoding map to JSON: %v", err)
+		// logger.Warn("Error encoding map to JSON: %v", err)
 	}
 	eventMap["logEntries"] = b
 

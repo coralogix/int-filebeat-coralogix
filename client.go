@@ -208,13 +208,13 @@ func (client *Client) publishEvents(data []publisher.Event) ([]publisher.Event, 
 	sendErr := error(nil)
 	if client.batchPublish {
 		// Publish events in bulk
-		client.log.logger.Debugf("Publishing events in batch.")
+		client.log.Debugf("Publishing events in batch.")
 		sendErr = client.BatchPublishEvent(data)
 		if sendErr != nil {
 			return data, sendErr
 		}
 	} else {
-		client.log.logger.Debugf("Publishing events one by one.")
+		client.log.Debugf("Publishing events one by one.")
 		for index, event := range data {
 			sendErr = client.PublishEvent(event)
 			if sendErr != nil {
@@ -224,7 +224,7 @@ func (client *Client) publishEvents(data []publisher.Event) ([]publisher.Event, 
 			}
 		}
 	}
-	client.log.logger.Debugf("PublishEvents: %d metrics have been published over HTTP in %v.", len(data), time.Now().Sub(begin))
+	client.log.Debugf("PublishEvents: %d metrics have been published over HTTP in %v.", len(data), time.Now().Sub(begin))
 	if len(failedEvents) > 0 {
 		return failedEvents, sendErr
 	}
@@ -242,7 +242,7 @@ func (client *Client) BatchPublishEvent(data []publisher.Event) error {
 	}
 	status, _, err := client.request("POST", client.params, events, client.headers)
 	if err != nil {
-		client.log.logger.Warn("Fail to insert a single event: %s", err)
+		client.log.Warn("Fail to insert a single event: %s", err)
 		if err == ErrJSONEncodeFailed {
 			// don't retry unencodable values
 			return nil
@@ -264,10 +264,10 @@ func (client *Client) PublishEvent(data publisher.Event) error {
 		return ErrNotConnected
 	}
 	event := data
-	client.log.logger.Debugf("Publish event: %s", event)
+	client.log.Debugf("Publish event: %s", event)
 	status, _, err := client.request("POST", client.params, makeEvent(&event.Content), client.headers)
 	if err != nil {
-		client.log.logger.Warn("Fail to insert a single event: %s", err)
+		client.log.Warn("Fail to insert a single event: %s", err)
 		if err == ErrJSONEncodeFailed {
 			// don't retry unencodable values
 			return nil

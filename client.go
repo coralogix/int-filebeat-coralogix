@@ -267,6 +267,7 @@ func (client *Client) PublishEvent(data publisher.Event) error {
 		return ErrNotConnected
 	}
 	event := data
+	logger.Debugf("CORALOGIXXX EVENT")
 	logger.Debugf("Publish event: %s", event)
 	status, _, err := client.request("POST", client.params, makeEvent(&event.Content), client.headers)
 	if err != nil {

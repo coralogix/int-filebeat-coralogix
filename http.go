@@ -60,7 +60,6 @@ func MakeHTTP(
 			//logger.Error("Invalid host param set: %s, Error: %v", host, err)
 			return outputs.Fail(err)
 		}
-		//logger.Info("Final host URL: " + hostURL)
 		var client outputs.NetworkClient
 		client, err = NewClient(ClientSettings{
 			URL:              hostURL,
@@ -77,6 +76,7 @@ func MakeHTTP(
 			ContentType:      config.ContentType,
 			Format:           config.Format,
 		})
+		// client.log.Info("Final host URL: " + hostURL)
 
 		if err != nil {
 			return outputs.Fail(err)

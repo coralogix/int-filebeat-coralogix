@@ -22,8 +22,9 @@ import (
 	"github.com/elastic/beats/v7/libbeat/logp"
 )
 
-// var logger *logp.Logger
-var logger = logp.NewLogger("coralogix")
+var logger *logp.Logger
+
+// var logger := logp.NewLogger("coralogix")
 
 // Client struct
 type Client struct {
@@ -77,7 +78,7 @@ type event struct {
 
 // NewClient instantiate a client.
 func NewClient(s ClientSettings) (*Client, error) {
-	// logger := logp.NewLogger("coralogix")
+	logger := logp.NewLogger("coralogix")
 	proxy := http.ProxyFromEnvironment
 	if s.Proxy != nil {
 		proxy = http.ProxyURL(s.Proxy)

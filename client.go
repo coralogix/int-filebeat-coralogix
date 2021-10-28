@@ -371,7 +371,7 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 	}
 
 	// coralogix parameters
-	client.log.Debug("ADDING CORALOGIX PARAMETERS:")
+	client.log.Debug("ADDING CORALOGIX PARAMETERS::")
 
 	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
 

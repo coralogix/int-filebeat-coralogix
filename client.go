@@ -415,8 +415,12 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 	}
 
 	textVal, _ := e.Fields.GetValue("text")
-	severVal, _ := textVal.GetValue("severity")
-	client.log.Info("MESSAGE.SEVERITY::::::::: " + severVal)
+	// var textJsonA = nil
+	var textMap map[string]string
+	err = json.Unmarshal(textVal, &textMap)
+	sevVal, _ := textMap["severity"]
+
+	client.log.Info("MESSAGE.SEVERITY::::::::: " + sevVal)
 	// add log entries fields
 	// timestampValStr, _ := timestampVal.(string)
 	// severityValStr, _ := severityVal.(string)
@@ -436,8 +440,6 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 }
 
 func (client *Client) makeEventHeader(v *beat.Event) map[string]json.RawMessage {
-	// Inline not supported,
-	// HT: https://stackoverflow.com/questions/49901287/embed-mapstringstring-in-go-json-marshaling-without-extra-json-property-inlin
 	type event0 event // prevent recursion
 
 	e := event{Timestamp: v.Timestamp.UTC(), Fields: v.Fields}

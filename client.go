@@ -414,7 +414,7 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 		timestampVal = strconv.FormatInt(int64(epochTimeInt), 10)
 	}
 
-	client.log.Info("MESSAGE.SEVERITY::::::::: " + e.Fields["text"]["severity"])
+	client.log.Info("MESSAGE.SEVERITY::::::::: " + e.Fields.GetValue("text").GetValue("severity"))
 	// add log entries fields
 	// timestampValStr, _ := timestampVal.(string)
 	// severityValStr, _ := severityVal.(string)

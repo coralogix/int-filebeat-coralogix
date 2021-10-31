@@ -388,8 +388,12 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 		e.Fields.Delete(k)
 
 	}
+	/////////////////////////////////// END OF HEADERS
+
+	/////////////////////////////////// START OF SPECIFIC EVENTS
 
 	var severityVal interface{} = "3"
+	e.Fields
 	_, err = e.Fields.HasKey("severity")
 	if err != nil {
 		severityVal, _ = e.Fields.GetValue("severity")
@@ -410,6 +414,7 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 		timestampVal = strconv.FormatInt(int64(epochTimeInt), 10)
 	}
 
+	client.log.Info("MESSAGE.SEVERITY::::::::: " + e.Fields["text"]["severity"])
 	// add log entries fields
 	// timestampValStr, _ := timestampVal.(string)
 	// severityValStr, _ := severityVal.(string)
@@ -425,5 +430,43 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	////////////////////////////////////////////////////////////////////////////////////
 
+	return eventMap
+}
+
+func (client *Client) makeEventHeader(v *beat.Event) map[string]json.RawMessage {
+	// Inline not supported,
+	// HT: https://stackoverflow.com/questions/49901287/embed-mapstringstring-in-go-json-marshaling-without-extra-json-property-inlin
+	type event0 event // prevent recursion
+
+	e := event{Timestamp: v.Timestamp.UTC(), Fields: v.Fields}
+	b, err := json.Marshal(event0(e))
+	if err != nil {
+		client.log.Warn("Error encoding event to JSON: %v", err)
+	}
+
+	var eventMap map[string]json.RawMessage
+	err = json.Unmarshal(b, &eventMap)
+	if err != nil {
+		client.log.Warn("Error decoding JSON to map: %v", err)
+	}
+
+	// coralogix parameters
+	client.log.Debug("ADDING CORALOGIX PARAMETERS::")
+
+	cxParamsKeys := []string{"applicationName", "subsystemName", "privateKey"}
+
+	for _, k := range cxParamsKeys {
+		paramVal, err := e.Fields.GetValue(k)
+		if err != nil {
+			client.log.Warn("Error Coralogix parameter %v is not exists: %v ", k, err)
+		}
+		b, err = json.Marshal(paramVal.(string))
+		if err != nil {
+			client.log.Warn("Error encoding map to JSON: %v", err)
+		}
+		eventMap[k] = b
+		e.Fields.Delete(k)
+
+	}
 	return eventMap
 }

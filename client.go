@@ -421,7 +421,7 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 	sevVal, _ := textMap["severity"]
 	sevvall, _ := sevVal.MarshalJSON()
 
-	client.log.Info("MESSAGE.SEVERITY::::::::: " + string(sevvall))
+	client.log.Info("MESSAGE.SEVERITY::::::::: " + string(textVal) + string(sevvall))
 	// add log entries fields
 	// timestampValStr, _ := timestampVal.(string)
 	// severityValStr, _ := severityVal.(string)

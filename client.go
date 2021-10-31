@@ -393,7 +393,6 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 	/////////////////////////////////// START OF SPECIFIC EVENTS
 
 	var severityVal interface{} = "3"
-	e.Fields
 	_, err = e.Fields.HasKey("severity")
 	if err != nil {
 		severityVal, _ = e.Fields.GetValue("severity")
@@ -416,11 +415,12 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	textVal, _ := e.Fields.GetValue("text")
 	// var textJsonA = nil
-	var textMap map[string]string
+	var textMap map[string]json.RawMessage
 	err = json.Unmarshal(textVal, &textMap)
 	sevVal, _ := textMap["severity"]
+	sevvall, _ := sevVal.MarshalJSON()
 
-	client.log.Info("MESSAGE.SEVERITY::::::::: " + sevVal)
+	client.log.Info("MESSAGE.SEVERITY::::::::: " + string(sevvall))
 	// add log entries fields
 	// timestampValStr, _ := timestampVal.(string)
 	// severityValStr, _ := severityVal.(string)

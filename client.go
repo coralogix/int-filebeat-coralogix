@@ -416,16 +416,18 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 		messageStr, _ := messageVal.(string)
 		err = json.Unmarshal([]byte(messageStr), &messageMap)
 
-		// check secerity
 		SevInMessage, _ := messageMap["severity"]
-		severityVal, _ = SevInMessage.MarshalJSON()
+		// severityVal, _ = SevInMessage.MarshalJSON()
 		isSeverityInMessage = string(SevInMessage) != "null"
+		if isSeverityInMessage {
+			severityVal = string(SevInMessage)
+		}
 		// isSeverityInMessage = allSeverities[string(SevInMessage)]
 		client.log.Debug("sevInMessage ::::::::" + string(SevInMessage))
 
 		TSInMessage, _ := messageMap["timestamp"]
-		TSInMessageVal, _ := TSInMessage.MarshalJSON()
-		isTimestampInMessage = string(TSInMessageVal) != "null"
+		// TSInMessageVal, _ := TSInMessage.MarshalJSON()
+		isTimestampInMessage = string(TSInMessage) != "null"
 
 	}
 	client.log.Debug("isSeverityInMessage ::::::::" + strconv.FormatBool(isSeverityInMessage))
@@ -437,9 +439,10 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 		if isSeverityInRoot {
 			severityVal, _ = e.Fields.GetValue("severity")
 			e.Fields.Delete("severity")
-		} else {
-			severityVal = "6"
 		}
+		//  else {
+		// 	severityVal = severityVal
+		// }
 
 	} else {
 		severityVal = "3"

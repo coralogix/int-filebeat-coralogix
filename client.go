@@ -413,7 +413,7 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 		timestampVal = strconv.FormatInt(int64(epochTimeInt), 10)
 	}
 
-	textVal, _ := e.Fields.GetValue("text")
+	textVal, _ := e.Fields.GetValue("message")
 	// var textJsonA = nil
 	// var textMap map[string]json.RawMessage
 	textStr, _ := textVal.(string)

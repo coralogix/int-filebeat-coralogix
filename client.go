@@ -415,11 +415,12 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	textVal, _ := e.Fields.GetValue("text")
 	// var textJsonA = nil
-	var textMap map[string]json.RawMessage
-	client.log.Info("MESSAGE.TEXT::::::::: " + string(textVal))
-	textVal, _ = json.Marshal(textVal)
+	// var textMap map[string]json.RawMessage
+	textStr, _ := textVal.(string)
+	client.log.Info("MESSAGE.TEXT::::::::: " + string(textStr))
+	textVal, _ = json.Marshal(textStr)
 	// err = json.Marshal(textVal, &textMap)
-	sevVal, _ := textMap["severity"]
+	sevVal, _ := textVal["severity"]
 	sevvall, _ := sevVal.MarshalJSON()
 
 	client.log.Info("MESSAGE.SEVERITY::::::::: " + string(sevvall))

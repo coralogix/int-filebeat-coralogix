@@ -72,6 +72,18 @@ type event struct {
 	Fields    common.MapStr `json:"-"`
 }
 
+// var allSeverities map[string]bool
+var (
+	allSeverities = map[string]bool{
+		"1": true,
+		"2": true,
+		"3": true,
+		"4": true,
+		"5": true,
+		"6": true,
+	}
+)
+
 // NewClient instantiate a client.
 func NewClient(s ClientSettings) (*Client, error) {
 	proxy := http.ProxyFromEnvironment
@@ -392,15 +404,46 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 
 	/////////////////////////////////// START OF SPECIFIC EVENTS
 
+	var messageMap map[string]json.RawMessage
+
+	isMessage, _ := e.Fields.HasKey("message")
+	isSeverityInMessage := false
+	isTimestampInMessage := false
 	var severityVal interface{} = "3"
-	_, err = e.Fields.HasKey("severity")
-	if err != nil {
-		severityVal, _ = e.Fields.GetValue("severity")
-		e.Fields.Delete("severity")
-	} else {
-		severityVal = "3"
+
+	if isMessage {
+		messageVal, _ := e.Fields.GetValue("message")
+		messageStr, _ := messageVal.(string)
+		err = json.Unmarshal([]byte(messageStr), &messageMap)
+
+		// check secerity
+		SevInMessage, _ := messageMap["severity"]
+		severityVal, _ = SevInMessage.MarshalJSON()
+		isSeverityInMessage = allSeverities[string(SevInMessage)]
+		client.log.Debug("sevInMessage ::::::::" + string(SevInMessage))
+
+		TSInMessage, _ := messageMap["timestamp"]
+		TSInMessageVal, _ := TSInMessage.MarshalJSON()
+		isTimestampInMessage = TSInMessageVal != nil
 
 	}
+	client.log.Debug("isSeverityInMessage ::::::::" + strconv.FormatBool(isSeverityInMessage))
+	client.log.Debug("isTimestampInMessage ::::::::" + strconv.FormatBool(isTimestampInMessage))
+
+	// var severityVal interface{} = "3"
+	isSeverityInRoot, err := e.Fields.HasKey("severity")
+	if isSeverityInMessage || isSeverityInRoot || isTimestampInMessage {
+		if isSeverityInRoot {
+			severityVal, _ = e.Fields.GetValue("severity")
+			e.Fields.Delete("severity")
+		} else {
+			severityVal = severityVal
+		}
+
+	} else {
+		severityVal = "3"
+	}
+
 	// if "timestamp" does not exist put current epoch time,
 	// if exist save it and delete from e.Fields
 	var timestampVal interface{} = "11111111111"
@@ -413,21 +456,18 @@ func (client *Client) makeEvent(v *beat.Event) map[string]json.RawMessage {
 		timestampVal = strconv.FormatInt(int64(epochTimeInt), 10)
 	}
 
-	textVal, _ := e.Fields.GetValue("message")
-	// var textJsonA = nil
-	var textMap map[string]json.RawMessage
-	textStr, _ := textVal.(string)
-	client.log.Info("MESSAGE.TEXT::::::::: " + string(textStr))
-	// textVal, _ = json.Marshal(textStr)
-	err = json.Unmarshal([]byte(textStr), &textMap)
-	sevVal, _ := textMap["severity"]
-	sevvall, _ := sevVal.MarshalJSON()
+	//////////////////////////////////////TEST//////////////////////////////////////////
+	// var textMap map[string]json.RawMessage
+	// textVal, _ := e.Fields.GetValue("message")
+	// textStr, _ := textVal.(string)
+	// client.log.Info("MESSAGE.TEXT::::::::: " + string(textStr))
+	// err = json.Unmarshal([]byte(textStr), &textMap)
+	// sevVal, _ := textMap["severity"]
+	// sevvall, _ := sevVal.MarshalJSON()
+	// client.log.Info("MESSAGE.SEVERITY::::::::: " + string(sevvall))
+	////////////////////////////////////////TEST/////////////////////////////////////////
 
-	client.log.Info("MESSAGE.SEVERITY::::::::: " + string(sevvall))
 	// add log entries fields
-	// timestampValStr, _ := timestampVal.(string)
-	// severityValStr, _ := severityVal.(string)
-
 	cxParamsInterface := []map[string]interface{}{{"timestamp": timestampVal, "severity": severityVal, "text": common.MapStr.String(e.Fields)}}
 
 	b, err = json.Marshal(cxParamsInterface)
